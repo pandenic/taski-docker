@@ -139,8 +139,8 @@ jobs:
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
+        host: ${{ secrets.YANDEX_SERVER_HOST }}
+        username: ${{ secrets.YANDEX_SERVER_USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
@@ -151,3 +151,13 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+  send_message:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+    - name: Send message
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.PANDENIC_TELEGRAM_ID }}
+        token: ${{ secrets.PANDENIC_BOT_TOKEN }}
+        message: Деплой успешно выполнен! 
